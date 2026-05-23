@@ -1,0 +1,770 @@
+#include <stdio.h>
+#include <tchar.h>
+#include <stdlib.h>
+#include <string.h>
+
+int choice;
+
+struct info
+{
+char country[100];
+char city[100];
+char time[100];
+int temp;
+int water;
+};
+
+info* DataEntry (info* d, int &n)
+{
+int a;
+printf("Какое количество данных вы хотите добавить: ");
+a = scanf("%d", &n);
+
+while (a != 1 )
+{
+printf("Некоректный ввод\n");
+printf("Введите другое число: ");
+while(getchar() != '\n'); // Чистка буфера от остатков ввода
+a = scanf("%d", &n);
+}
+
+if (n > 100)
+{
+printf("Вы ввели слишком большое число, программа не может его обработать, возврашение в главное меню\n");
+return d;
+}
+d = (info*)realloc(d, n * sizeof(info));
+
+ for(int i = 0; i < n; i++)
+ {
+
+  printf("Введите страну: ");
+  scanf("%s", d[i].country);
+  printf("Введите город: ");
+  scanf("%s", d[i].city);
+  printf("Введите время: ");
+  scanf("%s", d[i].time);
+  printf("Введите температуру: ");
+  scanf("%d", &d[i].temp);
+  printf("Введите влажность: ");
+  scanf("%d", &d[i].water);
+
+  }
+  system("cls");
+  return d;
+}
+int Key = 222;
+// Функции для дешифровки данных
+char Unshifr_sym(char symbol) {
+return symbol ^ Key;
+}
+
+int Unshifr_num(int value) {
+return value ^ Key;
+}
+
+void Unshifr(info *d) {
+for(int i = 0; d->country[i] != '\0'; i++)
+d->country[i] = Unshifr_sym (d->country[i]);
+
+for(int i = 0; d->city[i] != '\0'; i++)
+d->city[i] = Unshifr_sym (d->city[i]);
+
+for(int i = 0; d->time[i] != '\0'; i++)
+d->time[i] = Unshifr_sym (d->time[i]);
+
+d->temp = Unshifr_num(d->temp);
+d->water = Unshifr_num(d->water);
+}
+
+
+info* DataReading(info* d, int &n)
+{
+ int a;
+ int find_data;
+ char filename[100];
+ printf("Выберите формат файла текстовый или csv (1/0):");
+ a = scanf("%d", &find_data);
+
+ while (a != 1 )
+ {
+ printf("Некоректный ввод\n");
+ printf("Введите другое число: ");
+ while(getchar() != '\n'); // Чистка буфера от остатков ввода
+ a = scanf("%d", &find_data);
+ }
+
+ if (find_data != 1 && find_data != 0)
+ {
+ system("cls");
+ printf("Вы не выбрали формат, возвращение в главное меню\n");
+ return d;
+}
+
+ printf("Введите имя файла: \n");
+ scanf("%s", filename);
+
+ FILE* re = fopen(filename, "r");
+
+ if(re == NULL) {
+ puts("Не удалось открыть файл");
+ return d;}
+
+ char str[256] = "";
+ int i = 0;
+
+ if (find_data == 0)
+ {
+ while(fgets(str, 256, re)) {
+ info dd;
+ int cmd = sscanf(str, "%[^;];%[^;];%[^;];%d;%d;\n", dd.country, dd.city, dd.time, &dd.temp, &dd.water);
+ if(cmd == 5) {
+	i++;
+	d = (info*)realloc(d, i * sizeof(info));
+	d[i - 1] = dd;
+ } }
+ n = i;
+ system("cls");
+ printf("Данные успешно переписаны из файла! \n");
+ }
+
+ if (find_data == 1)
+ {
+//while(fgets(str, 256, re)) {
+//info dd;
+//int cmd = sscanf(str, "%s %s %s %d %d\n", dd.country, dd.city, dd.time, &dd.temp, &dd.water);
+//if(cmd == 5) {
+//	i++;
+//	d = (info*)realloc(d, i * sizeof(info));
+//	d[i - 1] = dd;
+//} }
+// n = i;
+//system("cls");
+// printf("Данные успешно переписаны из файла! \n");
+  char line[256];
+  while(fgets(str, 256, re))
+  {
+  info dd;
+  int cmd = sscanf(str, "%s %s %s %d %d\n",dd.country, dd.city, dd.time, &dd.temp, &dd.water);
+  //Unshifr(&dd);
+  if(cmd == 5) {
+  i++;
+  d = (info*)realloc(d, i * sizeof(info));
+  d[i - 1] = dd;
+}
+n = i;
+system("cls");
+
+  }
+ }
+
+ fclose(re);
+ return d;
+ }
+
+void PrintData(info* d, int &n)
+{
+  printf("+--------------+-----------------+-------+-----+----+\n");
+   for(int i = 0; i < n; i++) {
+   printf("| %12s | %15s | %5s | %3d | %2d |" "\n", d[i].country, d[i].city, d[i].time, d[i].temp, d[i].water);
+   printf("+--------------+-----------------+-------+-----+----+\n");
+ }
+}
+
+info* ChangeData(info*d, int &n)
+{
+ int m;
+ int a;
+ if( n < 1)
+ {
+ printf("Данные отсутствуют\n");
+ return d;
+ }
+
+ printf("Введите номер изменяемой строки от 1 до %d\n",n);
+ a = scanf("%d", &m);
+
+ while (a != 1 )
+ {
+ printf("Некоректный ввод\n");
+ printf("Введите другое число: ");
+ while(getchar() != '\n'); // Чистка буфера от остатков ввода
+ a = scanf("%d", &m);
+ }
+
+ m--;
+ int i = 10;
+  if (m >= 0 && m < n)
+   {
+  while( i != 0)
+  {
+  printf("Выберете поле редактирование: \n");
+  printf("(1) Страна\n");
+  printf("(2) Город\n");
+  printf("(3) Время\n");
+  printf("(4) Температура\n");
+  printf("(5) Влажность\n");
+  printf("(0) Выход\n");
+  scanf("%d", &i);
+
+  switch(i)
+  {
+  case 1:
+
+  printf("Введите страну: ");
+  scanf("%s", d[m].country);
+  break;
+
+  case 2:
+
+  printf("Введите город: ");
+  scanf("%s", d[m].city);
+  break;
+
+  case 3:
+
+  printf("Введите время: ");
+  scanf("%s", d[m].time);
+  break;
+
+  case 4:
+  printf("Введите температуру: ");
+  scanf("%d", &d[m].temp);
+  break;
+
+  case 5:
+  printf("Введите влажность: ");
+  scanf("%d", &d[m].water);
+  break;
+
+  case 0:
+  break;
+
+ }}
+ printf("Данные изменены\n"); }
+ return d;
+ }
+
+void DeleteData(info* d, int &n)
+ {
+ int a;
+ if (n <= 1)
+  {
+ printf("Данных слишком мало\n");
+  }
+ else
+   {
+ int m;
+ printf("Введите номер удаляемой строки от 1 до %d\n",n);
+ a = scanf("%d", &m);
+ while (a != 1 )
+ {
+  printf("Некоректный ввод\n");
+  printf("Введите другое число: ");
+  while(getchar() != '\n'); // Чистка буфера от остатков ввода
+  a = scanf("%d", &m);
+ }
+ m--;
+
+ if (m >= 0 && m < n)
+	 {
+ for(n--; m < n; m++)
+  d[m] = d[m+1];
+ d = (info*)realloc(d, n * sizeof(info));
+ printf("Данные удалены\n");
+	 }
+   }
+ }
+
+ info* AddData(info* d, int &n)
+ {
+ int a;
+ int b;
+ n++;
+ info* dd = (info*)realloc(d, n * sizeof(info));
+ if (n == 1)
+ memset(d, NULL, sizeof(info));
+ if (dd != NULL)
+ d = dd;
+ else
+ {
+ printf("Неудалось выделить память\n");
+ return d;
+ }
+  printf("Введите новую страну: ");
+  scanf("%s", d[n-1].country);
+  printf("Введите новый город: ");
+  scanf("%s", d[n-1].city);
+  printf("Введите новое время: ");
+  scanf("%s", d[n-1].time);
+  printf("Введите новую температуру: ");
+  a = scanf("%d", &d[n-1].temp);
+
+  while (a != 1 )
+  {
+  printf("Некоректный ввод\n");
+  printf("Введите новую температуру: ");
+  while(getchar() != '\n');
+  a = scanf("%d", &d[n-1].temp);
+  }
+
+  printf("Введите новую влажность: ");
+  b = scanf("%d", &d[n-1].water);
+
+  while (b != 1 )
+  {
+  printf("Некоректный ввод\n");
+  printf("Введите новую влажность: ");
+  while(getchar() != '\n');
+  b = scanf("%d", &d[n-1].water);
+  }
+  return d;
+ }
+
+int compare_country1(const void* a, const void* b)
+{
+return strcmp(((info *)a)->country, ((info *)b)->country);
+}
+
+int compare_country0(const void* a, const void* b)
+{
+return strcmp(((info *)b)->country, ((info *)a)->country);
+}
+
+void DataCort(info* d, int &n)
+{
+ if( n < 1)
+ {
+ printf("Данные отсутствуют\n");
+ return;
+ }
+
+ if( n == 1)
+ {
+ printf("Данных слишком мало для сортировки\n");
+ return;
+ }
+ int a;
+ int decei;
+ printf("Сортировка в по алфавиту или наоборот (1/0): ");
+ a = scanf("%d", &decei);
+ while (a != 1 )
+  {
+  printf("Некоректный ввод\n");
+  printf("Введите другое число: ");
+  while(getchar() != '\n');
+  a = scanf("%d", &decei);
+  }
+
+ if ( decei == 1)
+ {
+ qsort(d ,n ,sizeof(info), compare_country1);
+ printf("Сортировка выполнена\n");
+ return;
+ }
+
+ if (decei == 0)
+ {
+ qsort(d ,n ,sizeof(info), compare_country0);
+ printf("Сортировка выполнена");
+ return;
+ }
+
+ if (decei != 0 || decei != 1)
+ {
+ printf("Вы ввели не верное число!\n");
+ return;
+ }
+}
+
+void FindData(const info* d, int &n) {
+char country_exp[100];
+printf("Введите страну: ");
+scanf("%s", country_exp);
+for (int i = 0; i < n; i++) {
+if (strcmp(d[i].country, country_exp) == 0) {
+printf("Данные найдены\n");
+printf("+--------------+-----------------+-------+-----+----+\n");
+printf("| %12s | %15s | %5s | %3d | %2d |" "\n", d[i].country, d[i].city, d[i].time, d[i].temp, d[i].water);
+printf("+--------------+-----------------+-------+-----+----+\n");
+return;
+}
+}
+printf("Данные не найдены\n");
+return;
+ }
+
+ char Shifr_sym(char symbol){
+ return symbol ^ Key;}
+
+ int Shifr_num(int value) {
+ return value ^ Key;
+}
+
+ void Shifr(info *d) {
+ for(int i = 0; d->country[i] != '\0'; i++)
+ d->country[i] = Shifr_num(d->country[i]);
+
+ for(int i = 0; d->city[i] != '\0'; i++)
+ d->city[i] = Shifr_num(d->city[i]);
+
+ for(int i = 0; d->time[i] != '\0'; i++)
+ d->time[i] = Shifr_num(d->time[i]);
+
+ d->temp = Shifr_num(d->temp);
+ d->water = Shifr_num(d->water);
+}
+
+info* SaveData(info* d, int &n)
+{
+char filename1[100];
+   if( n < 1)
+   {
+   printf("Данные отсутствуют\n");
+   return d;
+   }
+int a;
+int save_choice;
+printf("Сохранить данные в текстовом формате или csv (1/0): ");
+a = scanf("%d", &save_choice);
+while (a != 1 )
+  {
+  printf("Некоректный ввод\n");
+  printf("Введите другое число: ");
+  while(getchar() != '\n'); // Чистка буфера от остатков ввода
+  a = scanf("%d", &save_choice);
+  }
+
+ printf("Введите имя файла: \n");
+ scanf("%s", filename1);
+
+ FILE* wr = fopen(filename1, "w+");
+ if(wr == NULL)
+ {
+ puts("Не удалось открыть файл");
+ return d;
+ }
+
+   if (save_choice == 0)
+   {
+   int b;
+   int shifr_ch;
+   printf("Шифровать данные или нет (1/0): ");
+   b = scanf("%d", &shifr_ch);
+   while (b != 1 )
+   {
+   printf("Некоректный ввод\n");
+   printf("Введите другое число: ");
+   while(getchar() != '\n');
+   b = scanf("%d", &shifr_ch);
+   }
+
+   if (shifr_ch == 0)
+   {
+   for(int i = 0; i < n; i++)
+   fprintf(wr, "%s;%s;%s;%i;%i\n", d[i].country, d[i].city, d[i].time, d[i].temp, d[i].water);
+   printf("Данные сохранены в csv формате\n");
+   }
+
+   if (shifr_ch == 1)
+   {
+   for(int i = 0; i < n; i++)
+   {
+   Shifr (&d[i]);
+   fprintf(wr , "%s;%s;%s;%i;%i\n", d[i].country, d[i].city, d[i].time, d[i].temp, d[i].water);
+   }
+
+   printf("Данные сохранены в csv формате\n");
+   }}
+
+   if (save_choice == 1)
+   {
+	int b;
+	int shifr_ch;
+	printf("Шифровать данные или нет (1/0): ");
+	b = scanf("%d", &shifr_ch);
+	while (b != 1 )
+	{
+	printf("Некоректный ввод\n");
+	printf("Введите другое число: ");
+	while(getchar() != '\n');
+	b = scanf("%d", &shifr_ch);
+	}
+
+   if (shifr_ch == 1)
+   {
+
+   for(int i = 0; i < n; i++)
+   {
+   Shifr (&d[i]);
+   fprintf(wr , "%s %s %s %d %d\n", d[i].country, d[i].city, d[i].time, d[i].temp, d[i].water);
+   }
+
+   printf("Данные сохранены в текстовом формате\n");
+   }
+
+   if (shifr_ch == 0)
+   {
+
+   for(int i = 0; i < n; i++)
+   fprintf(wr, "%s %s %s %i %i\n", d[i].country, d[i].city, d[i].time, d[i].temp, d[i].water);
+   printf("Данные сохранены в текстовом формате\n");
+   }
+
+   if (shifr_ch != 1 && shifr_ch != 0)
+   printf("Вы ввели не верное число, возвращение в главное меню\n");
+   }
+   if (save_choice != 0 && save_choice != 1)
+   printf("Вы ввели не верное число, возвращение в главное меню\n");
+
+ fclose(wr);
+ return d;
+ }
+
+void AnalizData(info* d, int &n)
+ {
+
+ if( n < 1)
+ {
+ printf("Данные отсутствуют\n");
+ return;
+ }
+
+ double middl_temp = 0;
+ double middl_water = 0;
+ for(int i = 0; i < n; i++)
+ {
+ middl_temp +=  d[i].temp;
+ middl_water += d[i].water;
+ }
+ middl_temp = middl_temp / n;
+ middl_water = middl_water / n;
+ printf ("Средняя температура: ");
+ printf ("%.2lf\n" , middl_temp);
+ printf ("Средняя влажность: ");
+ printf ("%.2lf\n" , middl_water);
+ }
+
+void Menu()
+{
+printf("Выберете действие:""\n"
+	 "(0) Выход из программы." "\n"
+     "(1) Ввод данных." "\n"
+     "(2) Вывод данных." "\n"
+     "(3) Изменение данных." "\n"
+	 "(4) Удаление данных." "\n"
+	 "(5) Добавление данных" "\n"
+	 "(6) Сортировка данных" "\n"
+	 "(7) Поиск записей" "\n"
+	 "(8) Обработка данных" "\n"
+	 "(9) Сохранение данных файл" "\n"
+	 "Ваш выбор: ");
+int c = scanf("%d", &choice);
+while (c != 1 )
+{
+printf("Некоректный ввод\n");
+printf("Введите другое число: ");
+while(getchar() != '\n'); // Чистка буфера от остатков ввода
+c = scanf("%d", &choice);
+}
+}
+
+int main(int argc, char *argv[])
+{
+system("chcp 1251");
+int deceit;
+int flag = 0;
+int count_info = 0;
+info* d = (info*)malloc(count_info * sizeof(info));
+if(argc > 1) {
+FILE* file = fopen(argv[1], "r");
+printf("%s\n", argv[1]);
+system("pause");
+if(file == NULL)
+{
+puts("Не удалось открыть файл из аргументов main");
+}
+else
+{
+char str[256] = "";
+int i = 0;
+while(fgets(str, 256, file)) {
+info dd;
+int cmd = sscanf(str,"%s %s %s %d %d\n", dd.country, dd.city, dd.time, &dd.temp, &dd.water);
+if(cmd == 5)
+{
+i++;
+d = (info*)realloc(d, i * sizeof(info));
+d[i - 1] = dd;
+}}
+count_info = i;
+system("cls");
+printf("Данные успешно переписаны из файла! \n");
+fclose(file);
+}}
+Menu();
+while (choice != 0 || flag != 0)
+{
+  switch(choice)
+  {
+///////////////////////////////////
+  case 1:
+  // Ввод данных
+  int a;
+  system("cls"); //Очистка консоли
+  printf("Ввод данных ручную или из файла (1/0): ");
+  a = scanf("%d", &deceit);
+while (a != 1 )
+{
+printf("Некоректный ввод\n");
+printf("Введите другое число: ");
+while(getchar() != '\n'); // Чистка буфера от остатков ввода
+a = scanf("%d", &deceit);
+}
+
+  if (deceit == 1)
+  // ввод в ручную
+  d = DataEntry(d, count_info);
+  if (deceit == 0)
+  // ввод данных из файла
+  d = DataReading(d, count_info);
+
+  if (deceit != 1 && deceit != 0)
+  printf("Вы не выбрали как хотите вводить данные, возвращние в главное меню\n");
+
+  system("pause");
+  system("cls");
+  Menu();
+  break;
+/////////////////////////////////////
+   case 2:
+   system("cls");
+
+   PrintData(d, count_info);
+
+   system("pause");
+   system("cls");
+   Menu();
+   break;
+////////////////////////////////////
+  case 3:
+  system("cls");
+
+  ChangeData(d, count_info);
+   flag = 1;
+  system("pause");
+  system("cls");
+  Menu();
+   break;
+////////////////////////////////////
+  case 4:
+  system("cls");
+
+  DeleteData(d, count_info);
+  flag = 1;
+  system("pause");
+  system("cls");
+  Menu();
+  break;
+////////////////////////////////////
+  case 5:
+  system("cls");
+
+  d = AddData(d, count_info);
+  flag = 1;
+  system("pause");
+  system("cls");
+  Menu();
+  break;
+////////////////////////////////////
+   case 6:
+   system("cls");
+
+   DataCort(d, count_info);
+   flag = 1;
+   system("pause");
+   system("cls");
+   Menu();
+   break;
+/////////////////////////////////////
+   case 7:
+   system("cls");
+
+   FindData(d, count_info);
+
+   system("pause");
+   system("cls");
+   Menu();
+   break;
+////////////////////////////////////
+   case 8:
+   system("cls");
+
+   AnalizData(d, count_info);
+
+   system("pause");
+   system("cls");
+   Menu();
+   break;
+/////////////////////////////////////
+   case 9:
+   system("cls");
+
+   SaveData( d, count_info);
+   flag = 0;
+   system("pause");
+   system("cls");
+   Menu();
+   break;
+ /////////////////////////////////////
+   case 0:
+   system("cls");
+
+   int savechoice;
+   printf("Вы не сохранили данные, не хотите это сделать(1/0): ");
+   scanf("%d", &savechoice);
+
+   if (savechoice == 0)
+   {
+   printf("Хорошо, данные не сохранены, выход из программы...\n");
+   system("pause");
+   return 0;
+   }
+
+   if (savechoice == 1)
+   {
+   SaveData( d, count_info);
+   return 0;
+   }
+
+   if (savechoice != 0 && savechoice != 1)
+
+   printf("вы ввели не верное число, возвращение в главное меню\n");
+
+   system("pause");
+   system("cls");
+   Menu();
+   break;
+
+ /////////////////////////////////////
+   default:
+   system("cls");
+   printf("Вы не выбради команду, попробуйте ещё раз: \n");
+   Menu();
+   break;
+  }
+}
+system("pause");
+}
+// новый шифр:
+//char Shifr_sym(char symbol) {
+ //   if ('A' <= symbol && symbol <= 'Z') {       // Шифруем заглавные латинские буквы
+ //       return 'A' + (symbol - 'A' + 3) % 26;   // Простое смещение на три позиции вперёд
+//    }
+//    else if ('a' <= symbol && symbol <= 'z') {  // Аналогично для строчных букв
+//        return 'a' + (symbol - 'a' + 3) % 26;
+//    }
+//    else {
+//        return symbol;                          // Оставляем другие символы неизменёнными
+//    }
+//}
